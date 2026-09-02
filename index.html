@@ -75,11 +75,16 @@
       calc(8px + var(--safe-left));
   }
   body.touch canvas {
-    width: min(94vw, calc(100dvh - 150px - var(--safe-top) - var(--safe-bottom)));
-    max-height: calc(100dvh - 150px - var(--safe-top) - var(--safe-bottom));
+    width: min(94vw, calc(100dvh - 188px - var(--safe-top) - var(--safe-bottom)));
+    height: auto;
+    max-width: 100%;
+    max-height: calc(100dvh - 188px - var(--safe-top) - var(--safe-bottom));
+    aspect-ratio: 1 / 1;
   }
   body.touch.landscape canvas {
     width: min(72vh, calc(100dvw - 200px));
+    height: auto;
+    aspect-ratio: 1 / 1;
     max-height: calc(100dvh - 28px - var(--safe-top) - var(--safe-bottom));
   }
   #hud {
@@ -396,16 +401,47 @@
     pointer-events: none;
   }
   #mobileDock .dock-row {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 12px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: end;
+    gap: 10px;
     pointer-events: none;
+  }
+  #joyPad {
+    justify-self: start;
+    width: var(--ctrl-size);
+    height: var(--ctrl-size);
+    border-radius: 50%;
+    border: 2px solid rgba(79,209,165,0.4);
+    background:
+      radial-gradient(circle at 50% 50%, rgba(79,209,165,0.08), transparent 62%),
+      rgba(18,22,30,0.78);
+    box-shadow: 0 4px 18px rgba(0,0,0,0.35);
+    position: relative;
+    touch-action: none;
+    pointer-events: auto;
+  }
+  #joyKnob {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 38%;
+    height: 38%;
+    margin: -19% 0 0 -19%;
+    border-radius: 50%;
+    background: rgba(79,209,165,0.85);
+    box-shadow: 0 0 10px rgba(79,209,165,0.45);
+    pointer-events: none;
+    will-change: transform;
   }
   #ringPad {
     display: flex;
     gap: 10px;
+    justify-self: center;
     pointer-events: auto;
+  }
+  #touchFire {
+    justify-self: end;
   }
   #ringPad button, #touchFire {
     width: var(--ctrl-size);
@@ -497,6 +533,12 @@
     body.touch {
       --ctrl-size: 68px;
     }
+    body.touch canvas {
+      width: min(96vw, calc(100dvh - 176px - var(--safe-top) - var(--safe-bottom)));
+      height: auto;
+      max-height: calc(100dvh - 176px - var(--safe-top) - var(--safe-bottom));
+      aspect-ratio: 1 / 1;
+    }
     #hud {
       gap: 8px;
       padding: 6px 10px;
@@ -518,6 +560,12 @@
       justify-content: center;
       padding-top: calc(8px + var(--safe-top));
       padding-bottom: calc(8px + var(--safe-bottom));
+    }
+    body.touch canvas {
+      width: min(72vh, calc(100dvw - 200px));
+      height: auto;
+      max-height: calc(100dvh - 28px - var(--safe-top) - var(--safe-bottom));
+      aspect-ratio: 1 / 1;
     }
     body.touch #abilityBar {
       bottom: calc(12px + var(--safe-bottom));
@@ -542,8 +590,7 @@
 </style>
 </head>
 <body>
-<!--<audio id="menuBgm" src="assets/audio/core-ignition.wav" loop preload="auto" autoplay playsinline></audio>-->
-<audio id="menuBgm" src="https://drive.google.com/uc?export=download&id=1o5RSVwSegUJcnAMUMnm-2xQg2NgDcsLl" loop preload="auto" autoplay playsinline></audio>
+<audio id="menuBgm" src="assets/audio/core-ignition.wav" loop preload="auto" autoplay playsinline></audio>
 <audio id="gameBgm" loop preload="auto"></audio>
 <script>
 window.__scAllowMenuBgm = true;
@@ -596,6 +643,9 @@ window.__scAllowMenuBgm = true;
 
   <div id="mobileDock">
     <div class="dock-row">
+      <div id="joyPad" role="application" aria-label="Aim joystick">
+        <div id="joyKnob"></div>
+      </div>
       <div id="ringPad">
         <button type="button" id="spinLeft" aria-label="Spin rings left">&#8634;</button>
         <button type="button" id="spinRight" aria-label="Spin rings right">&#8635;</button>
@@ -620,7 +670,7 @@ window.__scAllowMenuBgm = true;
     </div>
     <div id="highScoreLine">Best: <strong id="bestScore">0</strong> · Daily best: <strong id="dailyBest">0</strong></div>
     <div class="controlsHint desktop-hint">Arrows or mouse aim · Click / Space fire · Scroll or Q/E spin · 1–7 powers · P pause</div>
-    <div class="controlsHint mobile-hint">Drag the board to aim and shoot · Spin buttons turn rings · Tap powers</div>
+    <div class="controlsHint mobile-hint">Left stick aims · Spin buttons turn rings · FIRE shoots · Tap powers</div>
     <div class="actions">
       <button class="primary" id="startBtn">Start game</button>
       <button class="secondary hidden" id="replayBtn">Watch death</button>
@@ -717,10 +767,8 @@ window.__scAllowMenuBgm = true;
   ];
 
   const GAME_BGM = [
-    //'assets/audio/orbit-drive.wav',
-    'https://drive.google.com/uc?export=download&id=1pHe1QsqwrEKcA7U4sCp0PsqszVAdbqtr'
-    //'assets/audio/void-surge.wav'
-    'https://drive.google.com/uc?export=download&id=1NlCZ8g66z-f-Pd-sZUkmRbsvlpSASZrg'
+    'assets/audio/orbit-drive.wav',
+    'assets/audio/void-surge.wav'
   ];
 
   function currentStage() {
@@ -761,6 +809,8 @@ window.__scAllowMenuBgm = true;
   let spinHold = 0;
   let aimKeyX = 0;
   let aimKeyY = 0;
+  let joyX = 0;
+  let joyY = 0;
   let sealTimer = 0;
   let overchargeTimer = 0;
   let freezeTimer = 0;
@@ -1029,6 +1079,10 @@ window.__scAllowMenuBgm = true;
     spinHold = 0;
     aimKeyX = 0;
     aimKeyY = 0;
+    joyX = 0;
+    joyY = 0;
+    const knob = document.getElementById('joyKnob');
+    if (knob) knob.style.transform = '';
     aimTarget = aimAngle;
     replayBuffer = [];
     isReplaying = false;
@@ -1054,8 +1108,8 @@ window.__scAllowMenuBgm = true;
   function showTutorialSteps() {
     const mobile = document.body.classList.contains('touch');
     const steps = mobile ? [
-      { t: 8, msg: 'Drag on the board to aim and shoot. Use FIRE if you want a second thumb.' },
-      { t: 5.5, msg: 'Use the spin buttons to turn rings and block gaps.' },
+      { t: 8, msg: 'Use the left stick to aim and FIRE to shoot.' },
+      { t: 5.5, msg: 'Use the center spin buttons to turn rings and block gaps.' },
       { t: 3, msg: 'Tap powers below. Reach higher levels to unlock more.' }
     ] : [
       { t: 8, msg: 'Enemies slide along rings hunting for gaps — shoot them before they slip through.' },
@@ -1520,7 +1574,8 @@ window.__scAllowMenuBgm = true;
     });
     ringInput *= Math.max(0, 1 - dt * 4);
 
-    if (aimKeyX && !aimKeyY) aimTarget += aimKeyX * 4.6 * dt;
+    if (joyX || joyY) aimTarget = Math.atan2(joyY, joyX);
+    else if (aimKeyX && !aimKeyY) aimTarget += aimKeyX * 4.6 * dt;
     else if (aimKeyY && !aimKeyX) aimTarget += aimKeyY * 4.6 * dt;
     else if (aimKeyX || aimKeyY) aimTarget = Math.atan2(aimKeyY, aimKeyX);
     let ad = aimTarget - aimAngle;
@@ -1826,6 +1881,48 @@ window.__scAllowMenuBgm = true;
       }
     })();
     // ────────────────────────────────────────────────────────────────────
+
+    // Fill top/bottom dead bands with moving segmented lanes.
+    (function drawBandLanes() {
+      const t = performance.now() * 0.001;
+      const playRadius = (rings[rings.length - 1]?.radius || OUTER_RADIUS) + 34;
+      const topBandH = Math.max(0, (CY - playRadius) - 10);
+      const botBandY = CY + playRadius + 10;
+      const botBandH = Math.max(0, H - botBandY - 8);
+      if (topBandH < 18 && botBandH < 18) return;
+
+      const lineColor = stage.wall || skin.wall;
+      const bands = [
+        { y0: 8, h: topBandH },
+        { y0: botBandY, h: botBandH }
+      ];
+
+      bands.forEach((band, bi) => {
+        if (band.h < 18) return;
+        const count = Math.max(2, Math.min(6, Math.floor(band.h / 34)));
+        for (let i = 0; i < count; i++) {
+          const laneY = band.y0 + ((i + 1) * band.h) / (count + 1) + Math.sin(t * 1.2 + i + bi) * 1.4;
+          const dir = ((i + bi) % 2 === 0) ? 1 : -1;
+          const speed = 34 + i * 7;
+          const dashShift = (t * speed * dir) % 180;
+
+          ctx.save();
+          ctx.strokeStyle = lineColor;
+          ctx.lineWidth = 2.1;
+          ctx.globalAlpha = 0.22;
+          ctx.shadowColor = stage.glow;
+          ctx.shadowBlur = 10;
+          ctx.setLineDash([30, 18, 14, 22]);
+          ctx.lineDashOffset = dashShift;
+          ctx.beginPath();
+          ctx.moveTo(14, laneY);
+          ctx.lineTo(W - 14, laneY);
+          ctx.stroke();
+          ctx.restore();
+        }
+      });
+      ctx.setLineDash([]);
+    })();
 
     R.forEach((r, idx) => {
       const real = rings[idx];
@@ -2290,7 +2387,7 @@ window.__scAllowMenuBgm = true;
     const scaleX = W / rect.width, scaleY = H / rect.height;
     mouseX = (clientX - rect.left) * scaleX;
     mouseY = (clientY - rect.top) * scaleY;
-    if (!aimKeyX && !aimKeyY) aimTarget = Math.atan2(mouseY - CY, mouseX - CX);
+    if (!aimKeyX && !aimKeyY && !joyX && !joyY) aimTarget = Math.atan2(mouseY - CY, mouseX - CX);
   }
 
   let canvasPtrId = null;
@@ -2373,6 +2470,55 @@ window.__scAllowMenuBgm = true;
   bindHoldButton(touchFire, () => { holdingFire = true; tryShoot(); }, () => { holdingFire = false; });
   bindHoldButton(spinLeft, () => { spinHold = -1; }, () => { if (spinHold < 0) spinHold = 0; });
   bindHoldButton(spinRight, () => { spinHold = 1; }, () => { if (spinHold > 0) spinHold = 0; });
+
+  (function bindAimJoystick() {
+    const pad = document.getElementById('joyPad');
+    const knob = document.getElementById('joyKnob');
+    if (!pad || !knob) return;
+    let ptrId = null;
+    const dead = 0.14;
+    function applyFromClient(cx, cy) {
+      const r = pad.getBoundingClientRect();
+      const mx = r.left + r.width * 0.5;
+      const my = r.top + r.height * 0.5;
+      let dx = cx - mx;
+      let dy = cy - my;
+      const max = Math.min(r.width, r.height) * 0.38;
+      const mag = Math.hypot(dx, dy);
+      if (mag > max && mag > 0) {
+        dx = dx / mag * max;
+        dy = dy / mag * max;
+      }
+      knob.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+      let nx = max > 0 ? dx / max : 0;
+      let ny = max > 0 ? dy / max : 0;
+      if (Math.hypot(nx, ny) < dead) { nx = 0; ny = 0; }
+      joyX = nx;
+      joyY = ny;
+    }
+    function endJoy(e) {
+      if (ptrId != null && e && e.pointerId !== ptrId) return;
+      ptrId = null;
+      joyX = 0;
+      joyY = 0;
+      knob.style.transform = '';
+    }
+    pad.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setTouchMode(true);
+      ptrId = e.pointerId;
+      try { pad.setPointerCapture(e.pointerId); } catch (_) {}
+      applyFromClient(e.clientX, e.clientY);
+    });
+    pad.addEventListener('pointermove', (e) => {
+      if (ptrId == null || e.pointerId !== ptrId) return;
+      e.preventDefault();
+      applyFromClient(e.clientX, e.clientY);
+    });
+    pad.addEventListener('pointerup', endJoy);
+    pad.addEventListener('pointercancel', endJoy);
+  })();
 
   window.addEventListener('keydown', (e) => {
     if (state === 'playing') {

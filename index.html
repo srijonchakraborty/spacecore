@@ -66,14 +66,17 @@
     max-height: calc(100dvh - 24px - var(--safe-top) - var(--safe-bottom));
   }
   body.touch #wrap {
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
-    padding-top: calc(56px + var(--safe-top));
-    padding-bottom: calc(162px + var(--safe-bottom));
+    padding:
+      calc(8px + var(--safe-top))
+      calc(8px + var(--safe-right))
+      calc(8px + var(--safe-bottom))
+      calc(8px + var(--safe-left));
   }
   body.touch canvas {
-    width: min(100dvw, calc(100dvh - 218px - var(--safe-top) - var(--safe-bottom)));
-    max-height: min(100dvw, calc(100dvh - 218px - var(--safe-top) - var(--safe-bottom)));
+    width: min(94vw, calc(100dvh - 150px - var(--safe-top) - var(--safe-bottom)));
+    max-height: calc(100dvh - 150px - var(--safe-top) - var(--safe-bottom));
   }
   body.touch.landscape canvas {
     width: min(72vh, calc(100dvw - 200px));
@@ -969,7 +972,7 @@ window.__scAllowMenuBgm = true;
     return ((a % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
   }
   function ringSegmentInfo(ring, angle) {
-    const fraction = sealTimer > 0 ? Math.min(0.92, ri = sealTimer > 0 ? Math.min(0.92, ring.wallFraction + 0.35) : ring.wallFraction;
+    const fraction = sealTimer > 0 ? Math.min(0.92, ring.wallFraction + 0.35) : ring.wallFraction;
     const segment = (Math.PI * 2) / ring.wallCount;
     const wallLen = segment * fraction;
     const rel = normalizeAngle(angle - ring.angle);

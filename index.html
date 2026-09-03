@@ -590,7 +590,8 @@
 </style>
 </head>
 <body>
-<audio id="menuBgm" src="assets/audio/core-ignition.wav" loop preload="auto" autoplay playsinline></audio>
+<audio id="menuBgm" src="https://eu-central.storage.cloudconvert.com/tasks/34959e36-084f-4cf1-b1de-18966f945544/core-ignition.mp3?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=cloudconvert-production%2F20260903%2Ffra%2Fs3%2Faws4_request&X-Amz-Date=20260903T051456Z&X-Amz-Expires=86400&X-Amz-Signature=e9eaafbcef86d2894ebae26c68f9272adc3e3862cf40b5add88acbf7450ccebd&X-Amz-SignedHeaders=host&response-content-disposition=attachment%3B%20filename%3D%22core-ignition.mp3%22&response-content-type=audio%2Fmpeg&x-amz-checksum-mode=ENABLED&x-id=GetObject" loop preload="auto" autoplay playsinline></audio>
+
 <audio id="gameBgm" loop preload="auto"></audio>
 <script>
 window.__scAllowMenuBgm = true;
@@ -767,8 +768,8 @@ window.__scAllowMenuBgm = true;
   ];
 
   const GAME_BGM = [
-    'assets/audio/orbit-drive.wav',
-    'assets/audio/void-surge.wav'
+    'https://eu-central.storage.cloudconvert.com/tasks/b2097d26-c3fa-479f-86d9-5de64b385f19/orbit-drive.mp3?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=cloudconvert-production%2F20260903%2Ffra%2Fs3%2Faws4_request&X-Amz-Date=20260903T051729Z&X-Amz-Expires=86400&X-Amz-Signature=40cc0cbec5071d99551cbf61330e56285ab8409d638719243c5fc9d7de04f94d&X-Amz-SignedHeaders=host&response-content-disposition=attachment%3B%20filename%3D%22orbit-drive.mp3%22&response-content-type=audio%2Fmpeg&x-amz-checksum-mode=ENABLED&x-id=GetObject',
+    'https://eu-central.storage.cloudconvert.com/tasks/1a60e529-b818-4d57-a551-ca365aa398ad/void-surge.mp3?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=cloudconvert-production%2F20260903%2Ffra%2Fs3%2Faws4_request&X-Amz-Date=20260903T051859Z&X-Amz-Expires=86400&X-Amz-Signature=5ad7333fed09f0e15af7615f873c1baad9bad4519701ae905c6e15889fa0bccc&X-Amz-SignedHeaders=host&response-content-disposition=attachment%3B%20filename%3D%22void-surge.mp3%22&response-content-type=audio%2Fmpeg&x-amz-checksum-mode=ENABLED&x-id=GetObject'
   ];
 
   function currentStage() {
@@ -1044,11 +1045,12 @@ window.__scAllowMenuBgm = true;
 
   // Nova power scales with level — each tier is more destructive
   function getNovaTier(lv) {
-    if (lv >= 20) return { name: 'HYPERNOVA',      dmg: 999, rad: OUTER_RADIUS + 50, bossHp: 14, parts: 64, shake: 15, slow: 0.60, color: '#ff6bff', camP: 0.9 };
-    if (lv >= 16) return { name: 'SUPERNOVA',       dmg: 6,   rad: OUTER_RADIUS,      bossHp: 9,  parts: 52, shake: 12, slow: 0.45, color: '#ff9f43', camP: 0.75 };
-    if (lv >= 12) return { name: 'KILONOVA',        dmg: 3,   rad: 240,               bossHp: 6,  parts: 36, shake: 9,  slow: 0.30, color: '#ffd700', camP: 0.55 };
-    if (lv >= 8)  return { name: 'CLASSICAL NOVA',  dmg: 2,   rad: 185,               bossHp: 5,  parts: 26, shake: 7,  slow: 0.20, color: '#ffce54', camP: 0.40 };
-    return               { name: 'DWARF NOVA',      dmg: 1,   rad: 130,               bossHp: 4,  parts: 16, shake: 5,  slow: 0.12, color: '#ffa07a', camP: 0.28 };
+    const hp = 1 + Math.floor(lv / 3);
+    if (lv >= 20) return { name: 'HYPERNOVA',      dmg: 999,     rad: OUTER_RADIUS + 80, bossHp: 28, parts: 80, shake: 16, slow: 0.62, color: '#ff6bff', camP: 0.95 };
+    if (lv >= 16) return { name: 'SUPERNOVA',       dmg: hp + 10, rad: OUTER_RADIUS + 50, bossHp: 18, parts: 60, shake: 13, slow: 0.48, color: '#ff9f43', camP: 0.80 };
+    if (lv >= 12) return { name: 'KILONOVA',        dmg: hp + 6,  rad: OUTER_RADIUS + 10, bossHp: 12, parts: 44, shake: 10, slow: 0.34, color: '#ffd700', camP: 0.60 };
+    if (lv >= 8)  return { name: 'CLASSICAL NOVA',  dmg: hp + 4,  rad: 280,               bossHp: 8,  parts: 32, shake: 8,  slow: 0.22, color: '#ffce54', camP: 0.44 };
+    return               { name: 'DWARF NOVA',      dmg: hp + 3,  rad: 230,               bossHp: 5,  parts: 20, shake: 6,  slow: 0.14, color: '#ffa07a', camP: 0.30 };
   }
 
   function killsNeededForLevel(lv) { return 6 + lv * 2; }
@@ -1353,6 +1355,7 @@ window.__scAllowMenuBgm = true;
     }
     ensureAudio();
     sfx.ability();
+    const novaPower = name === 'nova' ? novaCharges : 0;
     if (name !== 'nova') abilityCd[name] = ABILITIES[name].cd;
     else novaCharges = Math.max(0, novaCharges - 1);
     if (suggestAbility === name) {
@@ -1385,13 +1388,17 @@ window.__scAllowMenuBgm = true;
       showBanner('MULTI-GUN', 'Six ports online', 900);
     } else if (name === 'nova') {
       const tier = getNovaTier(level);
+      const chargeMul = 0.72 + 0.14 * novaPower;
+      const rad = tier.rad * chargeMul;
+      const dmg = Math.ceil(tier.dmg * chargeMul);
+      const bossHit = Math.ceil(tier.bossHp * chargeMul);
       let kills = 0;
       for (let j = enemies.length - 1; j >= 0; j--) {
         const e = enemies[j];
-        if (e.radius > tier.rad) continue;
+        if (e.radius > rad) continue;
         const ex = CX + Math.cos(e.angle) * e.radius;
         const ey = CY + Math.sin(e.angle) * e.radius;
-        e.hp -= tier.dmg;
+        e.hp -= dmg;
         spawnBurst(ex, ey, tier.color, Math.floor(tier.parts * 0.35));
         if (e.hp <= 0) {
           enemies.splice(j, 1);
@@ -1399,7 +1406,7 @@ window.__scAllowMenuBgm = true;
           kills++;
         }
       }
-      if (boss && boss.radius <= tier.rad) boss.hp = Math.max(0, boss.hp - tier.bossHp);
+      if (boss && boss.radius <= rad) boss.hp = Math.max(0, boss.hp - bossHit);
       spawnBurst(CX, CY, tier.color, tier.parts);
       addShake(tier.shake, 0.30);
       camPunch = Math.max(camPunch, tier.camP);
